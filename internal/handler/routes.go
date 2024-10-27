@@ -1,4 +1,4 @@
-package main
+package handler
 
 import (
 	"github.com/gin-gonic/gin"
@@ -7,8 +7,9 @@ import (
 
 var db = make(map[string]string)
 
-func setupRouter() *gin.Engine {
+func SetupRouter() *gin.Engine {
 	r := gin.Default()
+	//config.ConnectDb()
 
 	// Ping test
 	r.GET("/ping", func(c *gin.Context) {
@@ -62,13 +63,4 @@ func setupRouter() *gin.Engine {
 	})
 
 	return r
-}
-
-func main() {
-	r := setupRouter()
-	// Listen and Server in 0.0.0.0:8080
-	err := r.Run(":8080")
-	if err != nil {
-		return
-	}
 }
