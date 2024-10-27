@@ -1,18 +1,19 @@
 package handler
 
 import (
+	"clear-api/internal/repository"
+	"clear-api/internal/service"
 	"github.com/gin-gonic/gin"
-	"net/http"
 )
 
 var db = make(map[string]string)
 
 func SetupRouter() *gin.Engine {
 	r := gin.Default()
-	//config.ConnectDb()
 
-	r.GET("/ping", func(c *gin.Context) {
-		c.String(http.StatusOK, "pong")
-	})
+	balanceRepo := repository.NewBalanceRepository()
+	balanceService := service.NewBalanceService(balanceRepo)
+
+	r.POST("/balance", balanceService.CreateBalance)
 	return r
 }
