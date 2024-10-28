@@ -10,6 +10,14 @@ import (
 
 type balanceRepository struct{}
 
+func (r *balanceRepository) GetAllBalances() ([]model.BalanceSheet, error) {
+	var balances []model.BalanceSheet
+	if err := data.DB.Find(&balances).Error; err != nil {
+		return nil, err
+	}
+	return balances, nil
+}
+
 func NewBalanceRepository() BalanceRepository {
 	return &balanceRepository{}
 }

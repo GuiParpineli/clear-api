@@ -14,5 +14,6 @@ type Composition struct {
 	Credit        float32      `gorm:"type:float;NOT NULL" json:"credit"`
 	Debit         float32      `gorm:"type:float;NOT NULL" json:"debit"`
 	History       string       `gorm:"type:varchar(255);NOT NULL" json:"history"`
+	ResponsibleID uint         `json:"responsible_id"`
 	Responsible   *Responsible `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"responsible"`
 }

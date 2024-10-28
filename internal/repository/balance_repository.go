@@ -11,4 +11,5 @@ type BalanceRepository interface {
 	GetBalanceById(balance *model.BalanceSheet) (*gorm.DB, error)
 	GetBalanceByCompanyAndAccount(balance *model.BalanceSheet) (*gorm.DB, error)
 	CloseBalance(balance *model.BalanceSheet) (*gorm.DB, error)
+	GetAllBalances() ([]model.BalanceSheet, error)
 }

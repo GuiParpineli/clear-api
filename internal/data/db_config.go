@@ -1,6 +1,7 @@
 package data
 
 import (
+	"clear-api/internal/model"
 	"fmt"
 	"github.com/joho/godotenv"
 	"gorm.io/driver/mysql"
@@ -35,5 +36,15 @@ func ConnectDb() {
 		fmt.Println("We are connected to the database ", DbDriver)
 	}
 
-	//DB.AutoMigrate()
+	err = DB.AutoMigrate(
+		&model.Address{},
+		&model.Account{},
+		&model.Company{},
+		&model.Responsible{},
+		&model.Composition{},
+		&model.BalanceSheet{},
+	)
+	if err != nil {
+		return
+	}
 }
