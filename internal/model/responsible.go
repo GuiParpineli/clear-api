@@ -2,7 +2,7 @@ package model
 
 import "gorm.io/gorm"
 
-type Role int
+type Role uint16
 
 const (
 	ADMIN Role = iota

@@ -24,8 +24,10 @@ func ConnectDb() {
 	DbPassword := os.Getenv("DB_PASSWORD")
 	DbName := os.Getenv("DB_NAME")
 	DbPort := os.Getenv("DB_PORT")
-	DBURL := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local",
-		DbUser, DbPassword, DbHost, DbPort, DbName)
+	DBURL := fmt.Sprintf(
+		"%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local",
+		DbUser, DbPassword, DbHost, DbPort, DbName,
+	)
 
 	DB, err = gorm.Open(mysql.Open(DBURL), &gorm.Config{})
 

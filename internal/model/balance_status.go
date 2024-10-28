@@ -1,6 +1,6 @@
 package model
 
-type BalanceStatus int
+type BalanceStatus uint16
 
 const (
 	OPEN BalanceStatus = iota

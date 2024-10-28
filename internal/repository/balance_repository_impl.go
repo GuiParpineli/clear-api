@@ -10,16 +10,32 @@ import (
 
 type balanceRepository struct{}
 
+func NewBalanceRepository() BalanceRepository {
+	return &balanceRepository{}
+}
+
+func (r *balanceRepository) ReopenCloseBalance(balance *model.BalanceSheet) (*gorm.DB, error) {
+	if balance.Status != 2 {
+		return nil, errors.New("balance is not pendent to open")
+	}
+	if balance.Compositions[0].Responsible.Role != 0 {
+		return nil, errors.New("user is not authorized")
+	}
+
+	balance.Status = 1
+	return data.DB.Updates(&balance), nil
+}
+
 func (r *balanceRepository) GetAllBalances() ([]model.BalanceSheet, error) {
 	var balances []model.BalanceSheet
-	if err := data.DB.Find(&balances).Error; err != nil {
+	if err := data.DB.
+		Joins("Company").
+		Joins("Account").
+		Preload("Compositions").
+		Find(&balances).Error; err != nil {
 		return nil, err
 	}
 	return balances, nil
-}
-
-func NewBalanceRepository() BalanceRepository {
-	return &balanceRepository{}
 }
 
 func (r *balanceRepository) checkBalance(balance *model.BalanceSheet) error {
