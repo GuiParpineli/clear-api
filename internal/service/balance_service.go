@@ -32,7 +32,7 @@ func (service *BalanceService) CreateBalance(c *gin.Context) {
 		return
 	}
 
-	_, err := service.repo.SaveBalance(&input)
+	err := service.repo.SaveBalance(&input)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Balance not saved."})
 		return

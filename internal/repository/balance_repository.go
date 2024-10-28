@@ -2,15 +2,15 @@ package repository
 
 import (
 	"clear-api/internal/model"
-	"gorm.io/gorm"
 )
 
 type BalanceRepository interface {
-	SaveBalance(balance *model.BalanceSheet) (*gorm.DB, error)
-	UpdateBalance(balance *model.BalanceSheet) (*gorm.DB, error)
-	GetBalanceById(balance *model.BalanceSheet) (*gorm.DB, error)
-	GetBalanceByCompanyAndAccount(balance *model.BalanceSheet) (*gorm.DB, error)
-	CloseBalance(balance *model.BalanceSheet) (*gorm.DB, error)
-	GetAllBalances() ([]model.BalanceSheet, error)
-	ReopenCloseBalance(balance *model.BalanceSheet) (*gorm.DB, error)
+	SaveBalance(balance *model.BalanceSheet) error
+	UpdateBalance(balance *model.BalanceSheet) error
+	GetBalanceById(balance *model.BalanceSheet) (*model.BalanceSheet, error)
+	GetBalanceByCompanyAndAccount(balance *model.BalanceSheet) (*model.BalanceSheet, error)
+	CloseBalance(balance *model.BalanceSheet) error
+	GetAllBalances() ([]*model.BalanceSheet, error)
+	ReopenCloseBalance(id uint) error
+	AddComposition(id uint, composition []*model.Composition) error
 }

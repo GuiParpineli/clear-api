@@ -4,7 +4,6 @@ import (
 	"clear-api/internal/data"
 	"clear-api/internal/model"
 	"errors"
-	"gorm.io/gorm"
 	"time"
 )
 
@@ -14,20 +13,32 @@ func NewBalanceRepository() BalanceRepository {
 	return &balanceRepository{}
 }
 
-func (r *balanceRepository) ReopenCloseBalance(balance *model.BalanceSheet) (*gorm.DB, error) {
-	if balance.Status != 2 {
-		return nil, errors.New("balance is not pendent to open")
+func (r *balanceRepository) AddComposition(id uint, composition []*model.Composition) error {
+	err := data.DB.Where("id=? AND status != ?", id, 1).Association("Compositions").Append(composition)
+	if err != nil {
+		return err
 	}
+	return nil
+}
+
+func (r *balanceRepository) ReopenCloseBalance(id uint) error {
+	var balance model.BalanceSheet
+	err := data.DB.Where("id = ? AND status != ?", id, 2).First(&balance).Error
+	if err != nil {
+		return err
+	}
+
 	if balance.Compositions[0].Responsible.Role != 0 {
-		return nil, errors.New("user is not authorized")
+		return errors.New("user is not authorized")
 	}
 
 	balance.Status = 1
-	return data.DB.Updates(&balance), nil
+	data.DB.Updates(&balance)
+	return nil
 }
 
-func (r *balanceRepository) GetAllBalances() ([]model.BalanceSheet, error) {
-	var balances []model.BalanceSheet
+func (r *balanceRepository) GetAllBalances() ([]*model.BalanceSheet, error) {
+	var balances []*model.BalanceSheet
 	if err := data.DB.
 		Joins("Company").
 		Joins("Account").
@@ -49,18 +60,19 @@ func (r *balanceRepository) checkBalance(balance *model.BalanceSheet) error {
 	return nil
 }
 
-func (r *balanceRepository) SaveBalance(balance *model.BalanceSheet) (*gorm.DB, error) {
+func (r *balanceRepository) SaveBalance(balance *model.BalanceSheet) error {
 	err := r.checkBalance(balance)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return data.DB.Create(&balance), nil
+	data.DB.Create(&balance)
+	return nil
 }
 
-func (r *balanceRepository) UpdateBalance(balance *model.BalanceSheet) (*gorm.DB, error) {
+func (r *balanceRepository) UpdateBalance(balance *model.BalanceSheet) error {
 	var balanceSaved model.BalanceSheet
 	if err := data.DB.Where("id = ?", &balance.ID).First(&balanceSaved).Error; err != nil {
-		return nil, err
+		return err
 	}
 
 	newBalance := model.BalanceSheet{
@@ -72,29 +84,39 @@ func (r *balanceRepository) UpdateBalance(balance *model.BalanceSheet) (*gorm.DB
 		Compositions: append(balanceSaved.Compositions, balance.Compositions...),
 	}
 
-	return data.DB.Save(&newBalance), nil
+	data.DB.Save(&newBalance)
+	return nil
 }
 
-func (r *balanceRepository) GetBalanceById(balance *model.BalanceSheet) (*gorm.DB, error) {
-	return data.DB.
+func (r *balanceRepository) GetBalanceById(balance *model.BalanceSheet) (*model.BalanceSheet, error) {
+	err := data.DB.
 		Joins("Company").
 		Joins("Account").
-		Joins("Compositions").
-		Where("id = ?", &balance.ID).First(&balance), nil
-}
-
-func (r *balanceRepository) GetBalanceByCompanyAndAccount(balance *model.BalanceSheet) (*gorm.DB, error) {
-	return data.DB.
-		Joins("Company").
-		Joins("Account").
-		Joins("Compositions").
-		Where("company = ? AND account = ?", balance.Company, balance.Account).First(&balance), nil
-}
-
-func (r *balanceRepository) CloseBalance(balance *model.BalanceSheet) (*gorm.DB, error) {
-	balance.Status = 3
-	if err := data.DB.Where("id = ?", &balance.ID).First(&balance).Error; err != nil {
+		Preload("Compositions").
+		Where("id = ?", &balance.ID).First(&balance).Error
+	if err != nil {
 		return nil, err
 	}
-	return data.DB.Save(&balance), nil
+	return balance, nil
+}
+
+func (r *balanceRepository) GetBalanceByCompanyAndAccount(balance *model.BalanceSheet) (*model.BalanceSheet, error) {
+	err := data.DB.
+		Joins("Company").
+		Joins("Account").
+		Preload("Compositions").
+		Where("company = ? AND account = ?", balance.Company, balance.Account).First(&balance).Error
+	if err != nil {
+		return nil, err
+	}
+	return balance, nil
+}
+
+func (r *balanceRepository) CloseBalance(balance *model.BalanceSheet) error {
+	balance.Status = 3
+	if err := data.DB.Where("id = ?", &balance.ID).First(&balance).Error; err != nil {
+		return err
+	}
+	data.DB.Save(&balance)
+	return nil
 }
